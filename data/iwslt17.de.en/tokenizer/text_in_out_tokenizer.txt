@@ -1,0 +1,8 @@
+
+German Text
+Input: [173, 51, 6364, 25545, 36877]
+Predicted Translation: de ningerJapan zipped
+
+English Text
+Input: [128, 78, 55, 4971, 16042, 36906]
+Predicted Translation: So this is James Risen.
