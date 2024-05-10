@@ -139,18 +139,7 @@ def preprocess_function(examples : datasets, tokenizer, args) -> datasets:
     return model_inputs
 
 
-class TFDataset(Dataset):
 
-    def __init__(self, bpm_model, tsv_file):
-        sp = spm.SentencePieceProcessor()
-        sp.load(bpm_model)
-
-        self.sp = sp
-        self.bos_id = sp.bos_id() #1
-        self.eos_id = sp.eos_id() #2
-        
-        self.tsv_file = pd.read_csv(tsv_file, delimiter='\t', usecols=['src', 'tar'])
-    
     def __len__(self):
         return len(self.tsv_file) #250k
     
@@ -168,7 +157,7 @@ def tokenize_text(data_dir, dataset, src_tokenizer_path, tgt_tokenizer_path, src
     tgt_texts = []
 
     dataset = TFDataset(src_tokenizer_path, tgt_tokenizer_path, tsv_file)
-    
+
     sampler = (DistributedSampler(dataset) if is_distributed else None)
     
     train_dataloader = DataLoader(
@@ -180,9 +169,17 @@ def tokenize_text(data_dir, dataset, src_tokenizer_path, tgt_tokenizer_path, src
     )
     return train_dataloader
 
-    src_tokenizer = PreTrainedTokenizer(vocab_files_names=src_tokenizer_path)
-    tgt_tokenizer = PreTrainedTokenizer(vocab_files_names=tgt_tokenizer_path)
+    src_tokenizer = spm.SentencePieceProcessor()
+    src_tokenizer.load(src_tokenizer_path)
 
+    tgt_tokenizer = spm.SentencePieceProcessor()
+    tgt_tokenizer.load(tgt_tokenizer_path)
+
+    src_bos_id = src_tokenizer.bos_id()
+    src_eos_id = src_tokenizer.eos_id()
+    tgt_bos_id = tgt_tokenizer.bos_id() 
+    tgt_eos_id = tgt_tokenizer.eos_id()
+    
     data = dataset['data']
 
     for idx in range(len(data)):

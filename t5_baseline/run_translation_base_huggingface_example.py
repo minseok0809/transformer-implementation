@@ -282,10 +282,10 @@ def main():
     else:
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
-    training_args.lr_scheduler_type = 'inverse_sqrt'
-    training_args.adam_beta1 = 0.9
-    training_args.adam_beta2 = 0.98
-    training_args.adam_epsilon = 1e-9
+    # training_args.lr_scheduler_type = 'inverse_sqrt'
+    # training_args.adam_beta1 = 0.9
+    # training_args.adam_beta2 = 0.98
+    # training_args.adam_epsilon = 1e-9
 
     training_args.evaluation_strategy = "epoch"
     training_args.save_strategy = "epoch"
