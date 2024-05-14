@@ -291,7 +291,7 @@ def main():
     training_args.evaluation_strategy = "epoch"
     training_args.save_strategy = "epoch"
     training_args.save_total_limit = 1
-    training_args.num_train_epochs = 30
+    training_args.num_train_epochs = 100
     training_args.push_to_hub = True
     training_args.load_best_model_at_end = True
     training_args.metric_for_best_model ='bleu'
