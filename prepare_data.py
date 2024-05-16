@@ -1,3 +1,8 @@
+import torch
+from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
+from torch.nn.functional import pad
+
 import sentencepiece as spm
 from pathlib import Path
 import tensorflow as tf
@@ -88,7 +93,7 @@ def sentencepiece_tokenizer(data_dir, lang, vocab_size):
 
     vocab_size = vocab_size-7
     spm.SentencePieceTrainer.train(
-        f"--input={corpus} --model_prefix={prefix} --vocab_size={vocab_size + 7}" + 
+        f"--input={corpus} --model_prefix={prefix} --vocab_size={vocab_size + 7} --minloglevel=2" + 
         " --model_type=bpe" +
         " --vocab_size=37000" + 
         " --max_sentence_length=999999" + # 문장 최대 길이
@@ -99,7 +104,7 @@ def sentencepiece_tokenizer(data_dir, lang, vocab_size):
         " --eos_id=3 --eos_piece=</s>"  # end of sequence (3)
     )
 
-    config = f"--input={corpus} --model_prefix={prefix} --vocab_size={vocab_size + 7}\n" + \
+    config = f"--input={corpus} --model_prefix={prefix} --vocab_size={vocab_size + 7} --minloglevel=2\n " + \
         "--model_type=bpe\n" + \
         "--vocab_size=37000\n" + \
         "--max_sentence_length=999999\n" + \
@@ -119,55 +124,72 @@ def sentencepiece_tokenizer(data_dir, lang, vocab_size):
     return tokenizer_path
 
 
-def preprocess_function(examples : datasets, tokenizer, args) -> datasets:
-    premise = examples['Title']
-    hypothesis = examples['Content']
-    # hypothesis2 = examples['Fake Content']
-    label = examples['Label']
-    
-    # hypothesis2 = [" " if hyp2 == "not fake" else hyp2 for hyp2 in hypothesis2]
+class TFDataset(Dataset):
+       
+    def __init__(self, src_tokenizer, tgt_tokenizer, src_texts, tgt_texts):
 
-    if args.use_SIC:
-        input_ids = tokenizer(premise, hypothesis, truncation=True, return_token_type_ids = False)['input_ids']
-        length = [len(one_input) for one_input in input_ids]
-        model_inputs = {'input_ids':input_ids, 'labels':label, 'length':length}
-    else :
-        # model_inputs = tokenizer(premise, hypothesis, hypothesis2, truncation=True, padding=True, return_token_type_ids = False)
-        model_inputs = tokenizer(premise, hypothesis, max_length=512, truncation=True, padding=True, return_token_type_ids = False)
-        model_inputs['labels'] = label
+        self.src_tokenizer = src_tokenizer
+        self.tgt_tokenizer = tgt_tokenizer
 
-    return model_inputs
-
-
+        self.src_bos_id = src_tokenizer.bos_id()
+        self.src_eos_id = src_tokenizer.eos_id()
+        self.tgt_bos_id = tgt_tokenizer.bos_id() 
+        self.tgt_eos_id = tgt_tokenizer.eos_id()
+        
+        self.src_texts = src_texts
+        self.tgt_texts = tgt_texts
 
     def __len__(self):
-        return len(self.tsv_file) #250k
+        return len(self.src_texts) 
     
     def __getitem__(self, idx):
-        src_sent = self.tsv_file.iloc[idx, 0] 
-        tar_sent = self.tsv_file.iloc[idx, 1]
-        src_encoded = [self.bos_id] + self.sp.encode_as_ids(src_sent) + [self.eos_id]
-        tar_encoded = [self.bos_id] + self.sp.encode_as_ids(tar_sent) + [self.eos_id]
+        src_sent = self.src_texts[idx] 
+        tgt_sent = self.tgt_texts[idx]
+        src_encoded = [self.src_bos_id] + self.src_tokenizer.encode_as_ids(src_sent) + [self.src_eos_id]
+        tgt_encoded = [self.tgt_bos_id] + self.tgt_tokenizer.encode_as_ids(tgt_sent) + [self.tgt_eos_id]
         
-        return torch.tensor(src_encoded), torch.tensor(tar_encoded)
+        src_tensor = torch.tensor(src_encoded)
+        tgt_tensor = torch.tensor(tgt_encoded)
+
+
+        return src_tensor, tgt_tensor
     
-def tokenize_text(data_dir, dataset, src_tokenizer_path, tgt_tokenizer_path, src_lang, tgt_lang):
+def generate_square_subsequent_mask(sz):
+    mask = (torch.triu(torch.ones((sz, sz))) == 1).transpose(0, 1)
+    mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
+    return mask
 
-    src_texts = []
-    tgt_texts = []
+def collate_fn(batch, max_pad=64):
 
-    dataset = TFDataset(src_tokenizer_path, tgt_tokenizer_path, tsv_file)
-
-    sampler = (DistributedSampler(dataset) if is_distributed else None)
+    src_list, tgt_list, src_mask_list, tgt_mask_list  = [], [], [], []
     
-    train_dataloader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=(is_distributed is False),
-        sampler=sampler,
-        collate_fn=collate_fn
-    )
-    return train_dataloader
+    for (src, tgt) in batch:
+        src_padded = pad(src, (0, max_pad - len(src))) # zero-padding to max_len 
+        src_list.append(src_padded)
+        tgt_padded = pad(tgt, (0, max_pad - len(tgt)))
+        tgt_list.append(tgt_padded)
+
+        src_seq_len = src_padded.shape[0]
+        src_mask = torch.zeros((src_seq_len, src_seq_len)).type(torch.bool)
+        src_mask_list.append(src_mask)
+
+        tgt_seq_len = tgt_padded.shape[0]
+        tgt_mask = generate_square_subsequent_mask(tgt_seq_len)
+        tgt_mask_list.append(tgt_mask)
+
+    src = torch.stack(src_list) # list([128],[128],[128]) => tensor w/ size([3,128])
+    tgt = torch.stack(tgt_list)
+    src_mask = torch.stack(src_mask_list) 
+    tgt_mask = torch.stack(tgt_mask_list)
+
+    return (src, tgt, src_mask, tgt_mask)
+
+
+def text_tokenizer(src_tokenizer_path, tgt_tokenizer_path,
+                   src_lang, tgt_lang, 
+                   data_dir, dataset, batch_size, is_distributed=False):
+
+    src_texts = []; tgt_texts = []
 
     src_tokenizer = spm.SentencePieceProcessor()
     src_tokenizer.load(src_tokenizer_path)
@@ -175,46 +197,23 @@ def tokenize_text(data_dir, dataset, src_tokenizer_path, tgt_tokenizer_path, src
     tgt_tokenizer = spm.SentencePieceProcessor()
     tgt_tokenizer.load(tgt_tokenizer_path)
 
-    src_bos_id = src_tokenizer.bos_id()
-    src_eos_id = src_tokenizer.eos_id()
-    tgt_bos_id = tgt_tokenizer.bos_id() 
-    tgt_eos_id = tgt_tokenizer.eos_id()
-    
     data = dataset['data']
-
+    
     for idx in range(len(data)):
         src_texts.append(data[idx]['translation'][src_lang])
         tgt_texts.append(data[idx]['translation'][tgt_lang])
 
+    dataset = TFDataset(src_tokenizer, tgt_tokenizer, src_texts, tgt_texts)
+    sampler = (DistributedSampler(dataset) if is_distributed else None)
 
-    # prepare_dataset
-    # pbar.close()
-
-
-    train_dataset = src_texts.map(
-        prep_fn,
-        batched=True,
-        num_proc=4,
-        remove_columns=column_names,
-        load_from_cache_file=False,
-        desc="Running tokenizer on train dataset",
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=(is_distributed is False),
+        sampler=sampler,
+        collate_fn=collate_fn
     )
 
-    tokenizer_folder = data_dir + "tokenizer/"
-    with open(tokenizer_folder + "text_in_out_tokenizer.txt", "w") as f:
-        f.write("\n")
-        f.write("German Text"); f.write("\n")
-        german_text = src_corpus[0]
-        # german_text_not_pad = german_text[np.nonzero(german_text)]
-        f.write('Input: {}'.format(german_text)); f.write("\n")
-        f.write('Predicted Translation: {}'.format(tgt_tokenizer.DecodeIds(german_text)));  f.write("\n")
-        
-        f.write("\n")
-        f.write("English Text"); f.write("\n")
-        english_text = tgt_corpus[0]
-        # english_text_not_pad = english_text[np.nonzero(english_text)]
-        f.write('Input: {}'.format(english_text)); f.write("\n")
-        f.write('Predicted Translation: {}'.format(tgt_tokenizer.DecodeIds(english_text))); f.write("\n")
-    f.close()
+    return dataloader
 
-    return src_input_ids, tgt_input_ids
+

@@ -440,6 +440,12 @@ def main():
         trust_remote_code=model_args.trust_remote_code,
     )
     """
+
+    config.d_ff = 4096
+    config.d_model = 1024
+    config.num_heads = 16
+    config.dropout_rate = 0.1
+
     model = AutoModelForSeq2SeqLM.from_config(
         config=config,
         # cache_dir=model_args.cache_dir,
@@ -447,11 +453,6 @@ def main():
         # token=model_args.token,
         trust_remote_code=model_args.trust_remote_code,
     )
-
-    model.config.d_ff = 4096
-    model.config.d_model = 1024
-    model.config.num_heads = 16
-    model.config.dropout_rate = 0.1
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.

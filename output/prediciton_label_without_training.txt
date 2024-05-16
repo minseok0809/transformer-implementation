@@ -1,0 +1,24 @@
+
+German Text
+Input ID: tensor([    2,    93,   469, 36874,  1090,  2464,  7349, 36874,   111,   846,
+         6486,   429,   747, 36874,    51, 36874,   111,    50,  8165,  2492,
+        10468,    37,   256,  2505,  6334, 36877,     3,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0])
+Input Text: ['', 'Sie', 'sagte', ',', '„', 'Das', 'Erste', ',', 'dass', 'jeder', 'Musl', 'im', 'weiß', ',', 'ist', ',', 'dass', 'der', 'Koran', 'Bildung', 'erfordert', 'und', 'auch', 'stark', 'unterstützt', '.', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+
+English Text
+Input ID: tensor([    2,  1014,   352, 36905,   151,  1561,   406,   196,  2174,   234,
+           55,     6,  3555,  2075,    55,    42,     8,  7183,  5177,    38,
+         8022, 11598, 12890, 36906,     3,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+            0,     0,     0,     0])
+Input Text: ['', 'She', 'said', ',', '"', 'The', 'first', 'thing', 'anyone', 'who', 'is', 'a', 'Muslim', 'knows', 'is', 'that', 'the', 'Koran', 'requires', 'and', 'strongly', 'supports', 'literacy', '.', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
+
+Prediction Text
+Output ID: [21881, 20734, 17547, 12758, 22174, 9181, 19904, 26310, 18537, 26044, 19936, 14955, 11311, 28226, 31004, 4521, 9883, 7965, 2767, 29968, 8467, 25878, 8820, 15622, 7891, 7642, 7642, 7642, 27207, 26961, 26961, 26961, 7642, 24465, 24465, 11328, 11328, 11328, 10884, 36459, 18905, 10884, 8592, 8592, 15684, 4703, 18211, 7642, 7642, 7642, 7642, 18211, 18211, 18211, 36459, 36459, 36459, 36459, 18211, 18211, 18211, 18211, 18211, 18211]
+Output Text: ['telecoms', 'pared', 'harvested', 'Spring', 'synonymous', 'July', 'vantage', 'palsy', 'prairie', 'urably', 'Portland', 'weed', 'otal', 'Specifically', 'cynics', 'erg', 'immig', 'uncle', 'pan', 'Bravo', 'elegant', 'hust', 'physi', 'precaution', 'bed', 'umines', 'umines', 'umines', 'shutter', 'Reading', 'Reading', 'Reading', 'umines', 'adversity', 'adversity', 'Bad', 'Bad', 'Bad', 'intensive', 'lizard', 'rejuvenation', 'intensive', 'chop', 'chop', 'statistically', 'tall', 'dilig', 'umines', 'umines', 'umines', 'umines', 'dilig', 'dilig', 'dilig', 'lizard', 'lizard', 'lizard', 'lizard', 'dilig', 'dilig', 'dilig', 'dilig', 'dilig', 'dilig']
