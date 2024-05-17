@@ -1,14 +1,14 @@
 import torch
 from torch import nn
 from .embedding import InputEmbedding, PositionalEmbedding, WordEmbedding
-from .sublayer import SelfAttention, ResidualConnection, FeedForwardNetwork
+from .sublayer import MultiHeadAttention, ResidualConnection, FeedForwardNetwork
 
 class Encoder(nn.Module):
     def __init__(self, embedding_dim, feed_forward_size, num_attention_heads,
                  attention_dropout_prob):    
         super(Encoder, self).__init__()
 
-        self.self_attention = SelfAttention(embedding_dim, num_attention_heads)
+        self.self_attention = MultiHeadAttention(embedding_dim, num_attention_heads)
         self.residual_connection = ResidualConnection(attention_dropout_prob, embedding_dim)
         self.feed_forward_network = FeedForwardNetwork(embedding_dim, feed_forward_size)
     
@@ -31,7 +31,7 @@ class Decoder(nn.Module):
                  attention_dropout_prob):    
         super(Decoder, self).__init__()
 
-        self.self_attention = SelfAttention(embedding_dim, num_attention_heads)
+        self.self_attention = MultiHeadAttention(embedding_dim, num_attention_heads)
         self.residual_connection = ResidualConnection(attention_dropout_prob, embedding_dim)
         self.feed_forward_network = FeedForwardNetwork(embedding_dim, feed_forward_size)
         

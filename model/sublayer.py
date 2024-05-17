@@ -2,9 +2,9 @@ import math
 import torch
 from torch import nn
 
-class SelfAttention(nn.Module):
+class MultiHeadAttention(nn.Module):
     def __init__(self, embedding_dim, num_attention_heads):    
-        super(SelfAttention, self).__init__()
+        super(MultiHeadAttention, self).__init__()
 
         self.num_attention_heads = num_attention_heads
         self.attention_head_size = int(embedding_dim / num_attention_heads)
