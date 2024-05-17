@@ -41,9 +41,10 @@
 ├── data_preprocessing.ipynb
 ├── debug/
 │   ├── dot_product_attention.txt
-│   ├── fead_foward_activation_function.txt
-│   ├── fead_foward_first_linear_layer.txt
-│   ├── final_head_attention_output.txt
+│   ├── fead_foward_network_activation_function.txt
+│   ├── fead_foward_network_first_linear_layer.txt
+│   ├── fead_foward_network_second_linear_layer.txt
+│   ├── final_attention_output.txt
 │   ├── input_embedding.txt
 │   ├── masked_attention_output.txt
 │   ├── masked_attention_probablity.txt
@@ -52,13 +53,13 @@
 │   ├── multi_head_attention_output.txt
 │   ├── multi_head_attention_probablity.txt
 │   ├── positional_embedding.txt
-│   ├── prediciton_label_without_training.txt
 │   ├── prediction_label_without_training.txt
 │   ├── scaled_dot_product_attention.txt
 │   ├── single_head_attention.txt
 │   ├── single_head_attention_output.txt
 │   ├── text_tokenizer.txt
-│   └── transformer_directory_tree.txt
+│   ├── transformer_directory_tree.txt
+│   └── transformer_tensor_dimension.txt
 ├── model/
 │   ├── __init__.py
 │   ├── __pycache__/
@@ -67,6 +68,8 @@
 │   │   ├── sublayer.cpython-310.pyc
 │   │   └── transformer.cpython-310.pyc
 │   ├── embedding.py
+│   ├── loss.py
+│   ├── optimizer.py
 │   ├── sublayer.py
 │   └── transformer.py
 ├── output/

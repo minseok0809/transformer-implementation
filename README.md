@@ -51,6 +51,8 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 ├── model/
 │   ├── __init__.py
 │   ├── embedding.py
+│   ├── loss.py
+│   ├── optimizer.py
 │   ├── sublayer.py
 │   └── transformer.py
 ├── debug/
@@ -58,6 +60,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 ├── prepare_data.py
 ├── README.md
 ├── train.py
+├── inference.py
 ├── train.sh
 └── transformer_pipeline.ipynb
 ```
