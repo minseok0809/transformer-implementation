@@ -83,25 +83,25 @@ class TransformerForTranslation(nn.Module):
 
         
     def forward(self, src_text, tgt_text, src_mask, tgt_mask):
-        embedding_output = self.embeddings(src_text)
+        src_embedding_output = self.embeddings(src_text)
 
         for sub_layer_idx in range(0, self.n_sub_layer):
             if sub_layer_idx == 0:
-                encoder_output = self.encoder(embedding_output, embedding_output, 
+                encoder_output = self.encoder(src_embedding_output, src_embedding_output, 
                                               src_mask, sub_layer_idx)
             elif sub_layer_idx > 0:
-                encoder_output = self.encoder(embedding_output, encoder_output, 
+                encoder_output = self.encoder(src_embedding_output, encoder_output, 
                                               src_mask, sub_layer_idx)
 
-        embedding_output = self.embeddings(tgt_text)
+        tgt_embedding_output = self.embeddings(tgt_text)
      
         for sub_layer_idx in range(0, self.n_sub_layer):
             if sub_layer_idx == 0:
-                decoder_output = self.decoder(embedding_output, embedding_output, embedding_output,
+                decoder_output = self.decoder(tgt_embedding_output, tgt_embedding_output, tgt_embedding_output,
                                               src_mask, tgt_mask, sub_layer_idx)
             
             elif sub_layer_idx > 0:
-                decoder_output = self.decoder(embedding_output, decoder_output, encoder_output,
+                decoder_output = self.decoder(tgt_embedding_output, decoder_output, encoder_output,
                                               src_mask, tgt_mask, sub_layer_idx)
  
         output = self.output_layer(decoder_output)
