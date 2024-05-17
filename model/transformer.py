@@ -8,16 +8,16 @@ class Encoder(nn.Module):
                  attention_dropout_prob):    
         super(Encoder, self).__init__()
 
-        self.self_attention = MultiHeadAttention(embedding_dim, num_attention_heads)
+        self.multi_head_attention = MultiHeadAttention(embedding_dim, num_attention_heads)
         self.residual_connection = ResidualConnection(attention_dropout_prob, embedding_dim)
         self.feed_forward_network = FeedForwardNetwork(embedding_dim, feed_forward_size)
     
     def forward(self, embedding_output, encoder_output, src_mask, sub_layer_idx):
 
         if sub_layer_idx == 0:
-            encoder_output = self.self_attention(embedding_output, embedding_output, src_mask)
+            encoder_output = self.multi_head_attention(embedding_output, embedding_output, src_mask)
         elif sub_layer_idx > 0:
-            encoder_output = self.self_attention(encoder_output, encoder_output, src_mask)
+            encoder_output = self.multi_head_attention(encoder_output, encoder_output, src_mask)
 
         encoder_output = self.residual_connection(embedding_output, encoder_output)
 
@@ -31,19 +31,19 @@ class Decoder(nn.Module):
                  attention_dropout_prob):    
         super(Decoder, self).__init__()
 
-        self.self_attention = MultiHeadAttention(embedding_dim, num_attention_heads)
+        self.multi_head_attention = MultiHeadAttention(embedding_dim, num_attention_heads)
         self.residual_connection = ResidualConnection(attention_dropout_prob, embedding_dim)
         self.feed_forward_network = FeedForwardNetwork(embedding_dim, feed_forward_size)
         
     def forward(self, embedding_output, decoder_output, encoder_output, src_mask, tgt_mask, sub_layer_idx):
         if sub_layer_idx == 0:
-            decoder_output = self.self_attention(embedding_output, embedding_output, tgt_mask)
+            decoder_output = self.multi_head_attention(embedding_output, embedding_output, tgt_mask)
         elif sub_layer_idx > 0:
-            decoder_output = self.self_attention(decoder_output, decoder_output, tgt_mask)
+            decoder_output = self.multi_head_attention(decoder_output, decoder_output, tgt_mask)
 
         decoder_output = self.residual_connection(embedding_output, decoder_output)
 
-        decoder_output = self.self_attention(decoder_output, encoder_output, src_mask)
+        decoder_output = self.multi_head_attention(decoder_output, encoder_output, src_mask)
         decoder_output = self.residual_connection(embedding_output, decoder_output)
 
         decoder_output = self.feed_forward_network(decoder_output)
