@@ -20,6 +20,7 @@ parser = argparse.ArgumentParser(description='Transformers')
 parser.add_argument('--config', type=str, default=None)
 parser.add_argument('--data_dir', type=str, default=None)
 parser.add_argument('--output_dir', type=str, default=None)
+parser.add_argument('--debug_dir', type=str, default=None)
 parser.add_argument('--src_lang', type=str, default=None)
 parser.add_argument('--tgt_lang', type=str, default=None)
 parser.add_argument('--seed', type=int, default=None)
@@ -96,7 +97,7 @@ def main(args):
         with tqdm.tqdm(train_dataloader) as pbar:
             pbar.set_description("Epoch " + str(epoch + 1))
             for i, batch in enumerate(pbar):
-                if i==0:
+                if i == 0:
                     first_batch = batch
 
             src_text = first_batch[0]
@@ -108,31 +109,32 @@ def main(args):
 
             prediction = torch.argmax(output, dim=-1).tolist()[0]
 
-
         pbar.close()
-
-
-        # with open(args.output_dir + "text_tokenizer.txt", "w") as f:
-        # with open(args.output_dir + "input_embedding.txt", "w") as f:
-        # with open(args.output_dir + "position_embedding.txt", "w") as f:
-        # with open(args.output_dir + "multi_head_attention.txt", "w") as f:
-        # with open(args.output_dir + "single_head_attention.txt", "w") as f:
-        # with open(args.output_dir + "dot_product_attention.txt", "w") as f:
-        # with open(args.output_dir + "scaled_dot_product_attention.txt", "w") as f:
-        # with open(args.output_dir + "attention_probablity.txt", "w") as f:
-        # with open(args.output_dir + "attention_output.txt", "w") as f:
-        # with open(args.output_dir + "single_head_attention_output.txt", "w") as f:    
-        # with open(args.output_dir + "final_head_attention_output.txt", "w") as f: 
-        # with open(args.output_dir + "masked_scaled_dot_product_attention.txt", "w") as f: 
-        # with open(args.output_dir + "masked_attention_probablity.txt", "w") as f:  
-        # with open(args.output_dir + "masked_attention_output.txt", "w") as f:   
-        # with open(args.output_dir + "prediction_label_without_training.txt", "w") as f:              
-        with open(args.output_dir + "prediction_label_without_training.txt", "w") as f:
+   
+        # with open('args.debug_dir' + "text_tokenizer.txt", "w") as f:
+        # with open('args.debug_dir' + "input_embedding.txt", "w") as f:
+        # with open('args.debug_dir' + "position_embedding.txt", "w") as f:
+        # with open('args.debug_dir' + "multi_head_attention.txt", "w") as f:
+        # with open('args.debug_dir' + "single_head_attention.txt", "w") as f:
+        # with open('args.debug_dir' + "dot_product_attention.txt", "w") as f:
+        # with open('args.debug_dir' + "scaled_dot_product_attention.txt", "w") as f:
+        # with open('args.debug_dir' + "multi_head_attention_probablity.txt", "w") as f:
+        # with open('args.debug_dir' + "multi_head_attention_output.txt", "w") as f:
+        # with open('args.debug_dir' + "single_head_attention_output.txt", "w") as f:    
+        # with open('args.debug_dir' + "final_head_attention_output.txt", "w") as f: 
+        # with open('args.debug_dir' + "fead_foward_network_first_linear_layer.txt", "w") as f: 
+        # with open('args.debug_dir' + "fead_foward_network_activation_function.txt", "w") as f: 
+        # with open('args.debug_dir' + "fead_foward_network_second_linear_layer.txt", "w") as f: 
+        # with open('args.debug_dir' + "masked_scaled_dot_product_attention.txt", "w") as f: 
+        # with open('args.debug_dir' + "masked_attention_probablity.txt", "w") as f:  
+        # with open('args.debug_dir' + "masked_attention_output.txt", "w") as f:   
+        # with open('args.debug_dir' + "prediction_label_without_training.txt", "w") as f:              
+        with open('args.debug_dir' + "fead_foward_network_second_linear_layer.txt", "w") as f: 
         
-            # f.write("output Size: {}".format(output.size())); f.write("\n\n")
-            # f.write("output ID: {}".format(output)); f.write("\n")
+            f.write("output Size: {}".format(output.size())); f.write("\n\n")
+            f.write("output ID: {}".format(output)); f.write("\n")
             
-           
+            """
             f.write("\n")
             f.write("German Text"); f.write("\n")
             f.write("Input ID: {}".format(src_text[0])); f.write("\n")
@@ -149,7 +151,7 @@ def main(args):
             f.write("Prediction Text"); f.write("\n")
             f.write("Output ID: {}".format(prediction)); f.write("\n")
             f.write('Output Text: {}'.format([tgt_tokenizer.DecodeIds(text) for text in prediction])); f.write("\n")
-
+            """
         f.close()
 
 

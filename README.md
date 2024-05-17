@@ -53,6 +53,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 │   ├── embedding.py
 │   ├── sublayer.py
 │   └── transformer.py
+├── debug/
 ├── output/
 ├── prepare_data.py
 ├── README.md

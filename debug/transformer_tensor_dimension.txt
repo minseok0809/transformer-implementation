@@ -1,0 +1,25 @@
+Tokenized Text: torch.Size([64])
+Tokenized Mask Text: torch.Size([64, 64])
+
+Input Embedding: torch.Size([32, 64, 512])
+Positional Embedding: torch.Size([32, 64, 512])
+
+Single Head Attention: torch.Size([32, 64, 504])
+Multi Head Attention: torch.Size([32, 12, 64, 42])
+Dot Product Attention: torch.Size([32, 12, 64, 64])
+Scaled Dot Product Attention: torch.Size([32, 12, 64, 64])
+Mutli Head Attention Probability: torch.Size([32, 12, 64, 64])
+Mutli Head Attention Output: torch.Size([32, 12, 64, 42])
+Single Head Attention Output: torch.Size([32, 64, 504])
+Final Head Attention Output:  torch.Size([32, 64, 512])
+
+Residul Connection:  torch.Size([32, 64, 512])
+
+Feed Forward Network First Linear Layer:  torch.Size([32, 64, 2048])
+Feed Forward Network Activation Function:  torch.Size([32, 64, 2048])
+Feed Forward Network Second Linear Layer:  torch.Size([32, 64, 512])
+
+Residul Connection:  torch.Size([32, 64, 512])
+
+Output Probability:  torch.Size([32, 64, 37000])
+Prediction: torch.Size([64])
