@@ -12,7 +12,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 * IWSLT-2017-01-B: https://wit3.fbk.eu/2017-01-b
 <br><br>
 
-## Directory Tree
+## Directory Structure
 ```
 /
 ├── config/
