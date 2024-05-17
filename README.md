@@ -6,12 +6,14 @@
 This project is the unofficial implementation of NeurlIPS 2017 paper Attention is All You Need [[PDF](https://arxiv.org/abs/1706.03762)]. 
 <br><br>
 
+
 ## Datasets
 * IWSLT-2017-01: https://wit3.fbk.eu/2017-01
 * IWSLT-2017-01-B: https://wit3.fbk.eu/2017-01-b
 <br><br>
 
 ## Directory Tree
+```
 /
 ├── config/
 │   └── demo.json
@@ -57,3 +59,18 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 ├── train.py
 ├── train.sh
 └── transformer_pipeline.ipynb
+```
+
+<br><br>
+
+
+## Experiment result
+
+|         | BLUE |
+| :-----: |:----: | 
+| Transformer-Small  |  | 
+| Transformer-Big |  |
+| T5-Small  | 19.21 | 
+| T5-Big | 14.66 |
+
+<br><br>
