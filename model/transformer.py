@@ -13,7 +13,7 @@ class Encoder(nn.Module):
         self.feed_forward_network = FeedForwardNetwork(embedding_dim, feed_forward_size)
     
     def forward(self, embedding_output, encoder_output, src_mask, sub_layer_idx):
-
+        
         if sub_layer_idx == 0:
             encoder_output = self.multi_head_attention(embedding_output, embedding_output, src_mask)
         elif sub_layer_idx > 0:
@@ -36,6 +36,7 @@ class Decoder(nn.Module):
         self.feed_forward_network = FeedForwardNetwork(embedding_dim, feed_forward_size)
         
     def forward(self, embedding_output, decoder_output, encoder_output, src_mask, tgt_mask, sub_layer_idx):
+
         if sub_layer_idx == 0:
             decoder_output = self.multi_head_attention(embedding_output, embedding_output, tgt_mask)
         elif sub_layer_idx > 0:
@@ -48,7 +49,7 @@ class Decoder(nn.Module):
 
         decoder_output = self.feed_forward_network(decoder_output)
         decoder_output = self.residual_connection(embedding_output, decoder_output)
-        
+       
         return decoder_output     
 
 class TransformerOutput(nn.Module):
@@ -68,13 +69,13 @@ class TransformerForTranslation(nn.Module):
      
     def __init__(self, batch_size, max_seq_length, vocab_size,
                  embedding_dim, sinusoidal_wave,
-                 n_sub_layer, feed_forward_size, num_attention_heads,
+                 num_sub_layer, feed_forward_size, num_attention_heads,
                  attention_dropout_prob):    
         super(TransformerForTranslation, self).__init__()
 
         self.embeddings = WordEmbedding(batch_size, max_seq_length, vocab_size,
                                         embedding_dim, sinusoidal_wave)
-        self.n_sub_layer = n_sub_layer
+        self.num_sub_layer = num_sub_layer
         self.encoder = Encoder(embedding_dim, feed_forward_size, num_attention_heads,
                                attention_dropout_prob)
         self.decoder = Decoder(embedding_dim, feed_forward_size, num_attention_heads,
@@ -83,19 +84,20 @@ class TransformerForTranslation(nn.Module):
 
         
     def forward(self, src_text, tgt_text, src_mask, tgt_mask):
+        
         src_embedding_output = self.embeddings(src_text)
 
-        for sub_layer_idx in range(0, self.n_sub_layer):
+        for sub_layer_idx in range(0, self.num_sub_layer):
             if sub_layer_idx == 0:
                 encoder_output = self.encoder(src_embedding_output, src_embedding_output, 
                                               src_mask, sub_layer_idx)
             elif sub_layer_idx > 0:
                 encoder_output = self.encoder(src_embedding_output, encoder_output, 
                                               src_mask, sub_layer_idx)
-
+        
         tgt_embedding_output = self.embeddings(tgt_text)
-     
-        for sub_layer_idx in range(0, self.n_sub_layer):
+
+        for sub_layer_idx in range(0, self.num_sub_layer):
             if sub_layer_idx == 0:
                 decoder_output = self.decoder(tgt_embedding_output, tgt_embedding_output, tgt_embedding_output,
                                               src_mask, tgt_mask, sub_layer_idx)
@@ -105,7 +107,5 @@ class TransformerForTranslation(nn.Module):
                                               src_mask, tgt_mask, sub_layer_idx)
  
         output = self.output_layer(decoder_output)
-
-        return output
-
-
+      
+        return output 

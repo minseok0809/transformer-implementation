@@ -170,7 +170,7 @@ def collate_fn(batch, max_pad=64):
         tgt_list.append(tgt_padded)
 
         src_seq_len = src_padded.shape[0]
-        src_mask = torch.zeros((src_seq_len, src_seq_len)).type(torch.bool)
+        src_mask = torch.zeros((src_seq_len, src_seq_len))
         src_mask_list.append(src_mask)
 
         tgt_seq_len = tgt_padded.shape[0]

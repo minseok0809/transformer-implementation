@@ -33,7 +33,6 @@ class MultiHeadAttention(nn.Module):
         x = x.view(*new_x_shape)
         return x
 
-
     def forward(self, x, y, mask):
         if torch.equal(x, y) == True:
             query_layer = self.query(x)
@@ -55,7 +54,7 @@ class MultiHeadAttention(nn.Module):
         scaled_dot_product_attention = dot_product_attention / math.sqrt(key_layer.size(-1))
 
         if mask is not None:
-            scaled_dot_product_attention.masked_fill_(mask == 0, -1e9)
+            scaled_dot_product_attention.masked_fill_(mask != 0, float("-inf"))
 
         attention_probablity = nn.Softmax(dim=-1)(scaled_dot_product_attention)
         attention_output = torch.matmul(attention_probablity, value_layer)
@@ -64,7 +63,7 @@ class MultiHeadAttention(nn.Module):
         attention_output = self.linear(attention_output)
 
         return attention_output
-
+    
 
 class ResidualConnection(nn.Module):
     def __init__(self, attention_dropout_prob, embedding_dim):    
