@@ -153,29 +153,6 @@ def main(args):
         f.close()
 
 
-"""
-@tf.function()
-def train_step(src, tgt, model, optimizer):
-    gold = tgt[:, 1:]
-        
-    enc_mask, dec_enc_mask, dec_mask = generate_masks(src, tgt)
-
-    # 계산된 loss에 tf.GradientTape()를 적용해 학습을 진행합니다.
-    with tf.GradientTape() as tape:
-        predictions, enc_attns, dec_attns, dec_enc_attns = \
-        model(src, tgt, enc_mask, dec_enc_mask, dec_mask)
-        loss = loss_function(gold, predictions[:, :-1])
-
-    # 최종적으로 optimizer.apply_gradients()가 사용됩니다. 
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    
-    return loss, enc_attns, dec_attns, dec_enc_attns
-     
-
-    # model = Transformer()     
-
-"""
 if __name__ == '__main__':
 
     args = parser.parse_args()
