@@ -30,7 +30,7 @@ def load_data(data_dir):
     return train_dataset, valid_dataset, test_dataset 
 
 
-def json_to_txt(data_dir):
+def json_to_txt(data_dir, txt_dir):
 
     train_dataset, valid_dataset, test_dataset = load_data(data_dir)
 
@@ -50,170 +50,165 @@ def json_to_txt(data_dir):
         test_de_texts.append(text['de'])
         test_en_texts.append(text['en'])
 
-    txt_folder = data_dir + 'txt/'
+    txt_dir = data_dir + txt_dir
 
-    if not os.path.exists(txt_folder):
-        os.makedirs(txt_folder)
+    if not os.path.exists(txt_dir):
+        os.makedirs(txt_dir)
 
-    with open(os.path.join(txt_folder, 'train-de.txt'), "w", encoding='utf-8') as fp:        
+    with open(os.path.join(txt_dir, 'train-de.txt'), "w", encoding='utf-8') as fp:        
         fp.write("\n".join(train_de_texts)) 
 
-    with open(os.path.join(txt_folder, 'train-en.txt'), "w", encoding='utf-8') as fp:        
+    with open(os.path.join(txt_dir, 'train-en.txt'), "w", encoding='utf-8') as fp:        
         fp.write("\n".join(train_en_texts)) 
 
-    with open(os.path.join(txt_folder, 'valid-de.txt'), "w", encoding='utf-8') as fp:        
+    with open(os.path.join(txt_dir, 'valid-de.txt'), "w", encoding='utf-8') as fp:        
         fp.write("\n".join(valid_de_texts)) 
 
-    with open(os.path.join(txt_folder, 'valid-en.txt'), "w", encoding='utf-8') as fp:        
+    with open(os.path.join(txt_dir, 'valid-en.txt'), "w", encoding='utf-8') as fp:        
         fp.write("\n".join(valid_en_texts)) 
 
-    with open(os.path.join(txt_folder, 'test-de.txt'), "w", encoding='utf-8') as fp:        
+    with open(os.path.join(txt_dir, 'test-de.txt'), "w", encoding='utf-8') as fp:        
         fp.write("\n".join(test_de_texts)) 
 
-    with open(os.path.join(txt_folder, 'test-en.txt'), "w", encoding='utf-8') as fp:        
+    with open(os.path.join(txt_dir, 'test-en.txt'), "w", encoding='utf-8') as fp:        
         fp.write("\n".join(test_en_texts)) 
 
-
-def sentencepiece_tokenizer(data_dir, lang, vocab_size):
-
-    tokenizer_folder = data_dir + "tokenizer/"
-    txt_folder = data_dir + 'txt/'
-    if not os.path.exists(tokenizer_folder):
-        os.makedirs(tokenizer_folder)
-
-    if lang == "de":
-        path_end = "*de.txt"
-        prefix = data_dir + "tokenizer/" + "transformer-sp-bpe-iwslt-de"
-    elif lang == "en":
-        path_end = "*en.txt"
-        prefix = data_dir + "tokenizer/" + "transformer-sp-bpe-iwslt-en"
-    
-    paths = [str(x) for x in Path(txt_folder).glob(path_end)]
-    corpus = ",".join(paths)
-
-    vocab_size = vocab_size-7
-    spm.SentencePieceTrainer.train(
-        f"--input={corpus} --model_prefix={prefix} --vocab_size={vocab_size + 7} --minloglevel=2" + 
-        " --model_type=bpe" +
-        " --vocab_size=37000" + 
-        " --max_sentence_length=999999" + # 문장 최대 길이
-        " --character_coverage=1.0"
-        " --pad_id=0 --pad_piece=<pad>" + # pad (0)
-        " --unk_id=1 --unk_piece=<unk>" + # unknown (1)
-        " --bos_id=2 --bos_piece=<s>" + # begin of sequence (2)
-        " --eos_id=3 --eos_piece=</s>"  # end of sequence (3)
-    )
-
-    config = f"--input={corpus} --model_prefix={prefix} --vocab_size={vocab_size + 7} --minloglevel=2\n " + \
-        "--model_type=bpe\n" + \
-        "--vocab_size=37000\n" + \
-        "--max_sentence_length=999999\n" + \
-        "--character_coverage=1.0" + \
-        "--pad_id=0 --pad_piece=<pad>\n" + \
-        "--unk_id=1 --unk_piece=<unk>\n" + \
-        "--bos_id=2 --bos_piece=<s>\n" + \
-        "--eos_id=3 --eos_piece=</s>\n"
-
-    tokenizer = spm.SentencePieceProcessor()
-    tokenizer.Load(f'{prefix}.model')
-    tokenizer_path = f'{prefix}.model'
-
-    # print(config)
-    # print(spm)
-
-    return tokenizer_path
-
-
-class TFDataset(Dataset):
-       
-    def __init__(self, src_tokenizer, tgt_tokenizer, src_texts, tgt_texts):
-
-        self.src_tokenizer = src_tokenizer
-        self.tgt_tokenizer = tgt_tokenizer
-
-        self.src_bos_id = src_tokenizer.bos_id()
-        self.src_eos_id = src_tokenizer.eos_id()
-        self.tgt_bos_id = tgt_tokenizer.bos_id() 
-        self.tgt_eos_id = tgt_tokenizer.eos_id()
+class SentencePieceTokenizer(object):
+    def __init__(self, tokenizer_path, vocab_size, encoding_type, pad_id, unk_id, bos_id, eos_id):
         
-        self.src_texts = src_texts
-        self.tgt_texts = tgt_texts
+        self.templates = '--input={} --model_prefix={} --vocab_size={} --model_type={} --bos_id={} --eos_id={} --pad_id={} --unk_id={} --minloglevel=2'
+        self.vocab_size = vocab_size
+        self.encoding_type = encoding_type
+        self.spm_path = tokenizer_path
+        self.pad_id = pad_id
+        self.unk_id = unk_id
+        self.bos_id = bos_id
+        self.eos_id = eos_id
+
+        self.l = 0
+        self.alpha = 0
+        self.n = 0    
+            
+    def transform(self, sentence, max_seq_length):
+        if self.l and self.alpha:
+            x = self.sp.SampleEncodeAsIds(sentence, self.l, self.alpha)
+        elif self.n:
+            x = self.sp.NBestEncodeAsIds(sentence, self.n)
+        else:
+            x = self.sp.EncodeAsIds(sentence)
+        if max_seq_length > 0:
+            pad = [0] * max_seq_length
+            pad[:min(len(x), max_seq_length)] = x[:min(len(x), max_seq_length)]
+            x = pad
+        return x
+    
+    def fit(self, input_file, model_name):
+        cmd = self.templates.format(input_file, self.spm_path + model_name, self.vocab_size, self.encoding_type,
+                                    self.bos_id, self.eos_id, self.pad_id, self.unk_id)
+        spm.SentencePieceTrainer.Train(cmd)
+        
+    def load_model(self, load_path):
+        file = self.spm_path + load_path
+        self.sp = spm.SentencePieceProcessor()
+        self.sp.Load(file)
+        self.sp.SetEncodeExtraOptions('bos:eos')
+        return self
+
+    def decode(self,encoded_sentences):
+        decoded_output = []
+        for encoded_sentence in encoded_sentences:
+            x = self.sp.DecodeIds(encoded_sentence)
+            decoded_output.append(x)
+        return decoded_output
+    
+    def encode(self,decoded_sentences):
+        encoded_output = []
+        for decoded_sentence in decoded_sentences:
+            x = self.sp.EncodeAsIds(decoded_sentence)
+            encoded_output.append(x)
+        return encoded_output
 
     def __len__(self):
-        return len(self.src_texts) 
+        return len(self.sp)
     
-    def __getitem__(self, idx):
-        src_sent = self.src_texts[idx] 
-        tgt_sent = self.tgt_texts[idx]
-        src_encoded = [self.src_bos_id] + self.src_tokenizer.encode_as_ids(src_sent) + [self.src_eos_id]
-        tgt_encoded = [self.tgt_bos_id] + self.tgt_tokenizer.encode_as_ids(tgt_sent) + [self.tgt_eos_id]
+class TrainingDataset(Dataset):
+    def __init__(self, src_tokenizer, tgt_tokenizer, max_seq_length, data_dir, txt_dir, src_lang, tgt_lang, type='train'):
         
-        src_tensor = torch.tensor(src_encoded)
-        tgt_tensor = torch.tensor(tgt_encoded)
+        tokenizer_dir = data_dir + "tokenizer/"
+        txt_dir = data_dir + txt_dir
+        if not os.path.exists(tokenizer_dir):
+            os.makedirs(tokenizer_dir)
 
+        src_paths = glob.glob(txt_dir + "*" + src_lang + ".txt")
+        tgt_paths = glob.glob(txt_dir + "*" + tgt_lang + ".txt")
+
+        for i in src_paths:
+            if type in i:
+                src_path = i
+
+        for i in tgt_paths:
+            if type in i:
+                tgt_path = i    
+
+        with open(src_path, encoding='utf-8') as f:
+            src_line = f.readlines()
+        with open(tgt_path, encoding='utf-8') as f:
+            tgt_line = f.readlines()
+
+        self.len = len(src_line)
+        self.src = src_line
+        self.tgt = tgt_line
+        self.src_tokenizer = src_tokenizer
+        self.tgt_tokenizer = tgt_tokenizer
+        self.max_seq_length = max_seq_length
+    
+    def __getitem__(self, index):
+        src = self.src[index]
+        tgt = self.tgt[index]
+        src_tensor = torch.tensor(self.src_tokenizer.transform(src, 0), dtype=torch.float64, requires_grad=True).cuda()
+        tgt_tensor = torch.tensor(self.tgt_tokenizer.transform(tgt, 0), dtype=torch.float64, requires_grad=True).cuda()
 
         return src_tensor, tgt_tensor
     
-def generate_square_subsequent_mask(sz):
-    mask = (torch.triu(torch.ones((sz, sz))) == 1).transpose(0, 1)
-    mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-    return mask
-
-def collate_fn(batch, max_pad=64):
-
-    src_list, tgt_list, src_mask_list, tgt_mask_list  = [], [], [], []
+    def __len__(self):
+        return self.len
     
-    for (src, tgt) in batch:
-        src_padded = pad(src, (0, max_pad - len(src))) # zero-padding to max_len 
-        src_list.append(src_padded)
-        tgt_padded = pad(tgt, (0, max_pad - len(tgt)))
-        tgt_list.append(tgt_padded)
+    def collate_fn(self,data):
+        def merge(sequences):
+            padded_seqs = torch.zeros(len(sequences),self.max_seq_length, requires_grad=True).long().cuda()
 
-        src_seq_len = src_padded.shape[0]
-        src_mask = torch.zeros((src_seq_len, src_seq_len))
-        src_mask_list.append(src_mask)
+            for i, seq in enumerate(sequences):
+                padded_seqs[i][:min(self.max_seq_length,len(seq))] = seq[:min(self.max_seq_length,len(seq))]
+            return padded_seqs
 
-        tgt_seq_len = tgt_padded.shape[0]
-        tgt_mask = generate_square_subsequent_mask(tgt_seq_len)
-        tgt_mask_list.append(tgt_mask)
+        data.sort(key=lambda x: len(x[0]), reverse=True)
 
-    src = torch.stack(src_list) # list([128],[128],[128]) => tensor w/ size([3,128])
-    tgt = torch.stack(tgt_list)
-    src_mask = torch.stack(src_mask_list) 
-    tgt_mask = torch.stack(tgt_mask_list)
+        src_seqs, trg_seqs = zip(*data)
+        src_seqs = merge(src_seqs)
+        trg_seqs = merge(trg_seqs)
 
-    return (src, tgt, src_mask, tgt_mask)
+        return src_seqs, trg_seqs
 
+class InferenceDataset(Dataset):
+    def __init__(self, src_tokenizer, tgt_tokenizer, inputs, outputs,
+                 max_seq_length, bos_id):
 
-def text_tokenizer(src_tokenizer_path, tgt_tokenizer_path,
-                   src_lang, tgt_lang, 
-                   data_dir, dataset, batch_size, is_distributed=False):
+        self.src_tokenizer = src_tokenizer
+        self.tgt_tokenizer = tgt_tokenizer
+        self.len = len(inputs)
+        self.inputs = inputs
+        self.outputs = outputs
+        self.max_seq_length = max_seq_length
+        self.bos_id = bos_id
 
-    src_texts = []; tgt_texts = []
+    def __getitem__(self,index):
+        input = self.inputs[index]
+        label = self.outputs[index]
+        inputs = torch.tensor(self.src_tokenizer.transform(input, self.max_seq_length)).cuda()
+        outputs = torch.tensor([self.bos_id]) 
+        labels = torch.tensor(self.tgt_tokenizer.transform(label, self.max_seq_length)).cuda()
+        return inputs, outputs, labels
 
-    src_tokenizer = spm.SentencePieceProcessor()
-    src_tokenizer.load(src_tokenizer_path)
-
-    tgt_tokenizer = spm.SentencePieceProcessor()
-    tgt_tokenizer.load(tgt_tokenizer_path)
-
-    data = dataset['data']
+    def __len__(self):
+        return self.len
     
-    for idx in range(len(data)):
-        src_texts.append(data[idx]['translation'][src_lang])
-        tgt_texts.append(data[idx]['translation'][tgt_lang])
-
-    dataset = TFDataset(src_tokenizer, tgt_tokenizer, src_texts, tgt_texts)
-    sampler = (DistributedSampler(dataset) if is_distributed else None)
-
-    dataloader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        shuffle=(is_distributed is False),
-        sampler=sampler,
-        collate_fn=collate_fn
-    )
-
-    return dataloader
-
-

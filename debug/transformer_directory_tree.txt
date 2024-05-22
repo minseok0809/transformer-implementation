@@ -1,18 +1,18 @@
 /
-├── __pycache__/
-│   ├── prepare_data.cpython-310.pyc
-│   └── train.cpython-310.pyc
-├── config/
-│   └── demo.json
 ├── data/
 │   ├── iwslt17.de.en/
-│   │   ├── test-de-en.json
+│   │   ├── huggingface_txt/
+│   │   │   ├── test-de.txt
+│   │   │   ├── test-en.txt
+│   │   │   ├── train-de.txt
+│   │   │   ├── train-en.txt
+│   │   │   ├── valid-de.txt
+│   │   │   └── valid-en.txt
 │   │   ├── tokenizer/
 │   │   │   ├── transformer-sp-bpe-iwslt-de.model
 │   │   │   ├── transformer-sp-bpe-iwslt-de.vocab
 │   │   │   ├── transformer-sp-bpe-iwslt-en.model
 │   │   │   └── transformer-sp-bpe-iwslt-en.vocab
-│   │   ├── train-de-en.json
 │   │   ├── txt/
 │   │   │   ├── test-de.txt
 │   │   │   ├── test-en.txt
@@ -20,77 +20,41 @@
 │   │   │   ├── train-en.txt
 │   │   │   ├── valid-de.txt
 │   │   │   └── valid-en.txt
+│   │   ├── test-de-en.json
+│   │   ├── train-de-en.json
 │   │   └── validation-de-en.json
 │   ├── iwslt17.de.en.huggingface/
 │   │   ├── test-de-en.json
 │   │   ├── train-de-en.json
 │   │   └── validation-de-en.json
-│   └── iwslt17.de.en.orig/
-│       └── xml/
-│           ├── dev/
-│           │   ├── IWSLT17.TED.dev2010.de-en.de.xml
-│           │   └── IWSLT17.TED.dev2010.de-en.en.xml
-│           ├── test/
-│           │   ├── IWSLT17.TED.tst2017.mltlng.de-en.de.xml
-│           │   └── IWSLT17.TED.tst2017.mltlng.en-de.en.xml
-│           └── train/
-│               ├── train.tags.de-en.de.txt
-│               ├── train.tags.de-en.de.xml
-│               ├── train.tags.de-en.en.txt
-│               └── train.tags.de-en.en.xml
-├── data_preprocessing.ipynb
-├── debug/
-│   ├── dot_product_attention.txt
-│   ├── fead_foward_network_activation_function.txt
-│   ├── fead_foward_network_first_linear_layer.txt
-│   ├── fead_foward_network_second_linear_layer.txt
-│   ├── final_attention_output.txt
-│   ├── input_embedding.txt
-│   ├── masked_attention_output.txt
-│   ├── masked_attention_probablity.txt
-│   ├── masked_scaled_dot_product_attention.txt
-│   ├── multi_head_attention.txt
-│   ├── multi_head_attention_output.txt
-│   ├── multi_head_attention_probablity.txt
-│   ├── positional_embedding.txt
-│   ├── prediction_label_without_training.txt
-│   ├── scaled_dot_product_attention.txt
-│   ├── single_head_attention.txt
-│   ├── single_head_attention_output.txt
-│   ├── text_tokenizer.txt
-│   ├── transformer_directory_tree.txt
-│   └── transformer_tensor_dimension.txt
+│   ├── iwslt17.de.en.orig/
+│   │   └── xml/
+│   │       ├── dev/
+│   │       │   ├── IWSLT17.TED.dev2010.de-en.de.xml
+│   │       │   └── IWSLT17.TED.dev2010.de-en.en.xml
+│   │       ├── test/
+│   │       │   ├── IWSLT17.TED.tst2017.mltlng.de-en.de.xml
+│   │       │   └── IWSLT17.TED.tst2017.mltlng.en-de.en.xml
+│   │       └── train/
+│   │           ├── train.tags.de-en.de.txt
+│   │           ├── train.tags.de-en.de.xml
+│   │           ├── train.tags.de-en.en.txt
+│   │           └── train.tags.de-en.en.xml
 ├── model/
 │   ├── __init__.py
-│   ├── __pycache__/
-│   │   ├── __init__.cpython-310.pyc
-│   │   ├── embedding.cpython-310.pyc
-│   │   ├── sublayer.cpython-310.pyc
-│   │   └── transformer.cpython-310.pyc
 │   ├── embedding.py
 │   ├── loss.py
 │   ├── optimizer.py
 │   ├── sublayer.py
 │   └── transformer.py
-├── output/
-├── prepare_data.py
-├── README.md
+├── config/
+├── debug/
+├── inference/
 ├── t5_baseline/
-│   ├── Attention is all you need.pdf
-│   ├── data/
-│   │   └── iwslt17.de.en/
-│   │       ├── test-de-en.json
-│   │       ├── train-de-en.json
-│   │       └── validation-de-en.json
-│   ├── run_translation_base_huggingface_example.py
-│   ├── run_translation_big_huggingface_example.py
-│   ├── t5-big-scratch-iwslt2017/
-│   │   ├── all_results.json
-│   │   └── generated_predictions.csv
-│   ├── t5-small-scratch-iwslt2017/
-│   │   ├── all_results.json
-│   │   └── generated_predictions.csv
-│   └── t5_pipeline.ipynb
+├── README.md
+├── prepare_data.py
 ├── train.py
-├── train.sh
+├── inference.py
+├── data_preprocessing.ipynb
+├── transformer_inference.ipynb
 └── transformer_pipeline.ipynb

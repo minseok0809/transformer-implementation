@@ -19,13 +19,11 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 │   └── demo.json
 ├── data/
 │   ├── iwslt17.de.en/
-│   │   ├── test-de-en.json
 │   │   ├── tokenizer/
 │   │   │   ├── transformer-sp-bpe-iwslt-de.model
 │   │   │   ├── transformer-sp-bpe-iwslt-de.vocab
 │   │   │   ├── transformer-sp-bpe-iwslt-en.model
 │   │   │   └── transformer-sp-bpe-iwslt-en.vocab
-│   │   ├── train-de-en.json
 │   │   ├── txt/
 │   │   │   ├── test-de.txt
 │   │   │   ├── test-en.txt
@@ -33,6 +31,8 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 │   │   │   ├── train-en.txt
 │   │   │   ├── valid-de.txt
 │   │   │   └── valid-en.txt
+│   │   ├── test-de-en.json
+│   │   ├── train-de-en.json
 │   │   └── validation-de-en.json
 │   └── iwslt17.de.en.orig/
 │       └── xml/
@@ -47,7 +47,6 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 │               ├── train.tags.de-en.de.xml
 │               ├── train.tags.de-en.en.txt
 │               └── train.tags.de-en.en.xml
-├── data_preprocessing.ipynb
 ├── model/
 │   ├── __init__.py
 │   ├── embedding.py
@@ -57,11 +56,13 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 │   └── transformer.py
 ├── debug/
 ├── output/
-├── prepare_data.py
+├── inference/
+│   ├── data
 ├── README.md
+├── prepare_data.py
 ├── train.py
 ├── inference.py
-├── train.sh
+├── data_preprocessing.ipynb
 └── transformer_pipeline.ipynb
 ```
 
@@ -76,5 +77,14 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 | Transformer-Big |  |
 | T5-Small  | 19.21 | 
 | T5-Big | 14.66 |
+
+<br><br>
+
+|      Transformer-Small   | BLUE |
+| :-----: |:----: | 
+| Noam Optimizer + Label Smoothing |  | 
+| Noam Optimizer |  |
+| Adam Optimizer + Label Smoothing |  | 
+| Adam Optimizer |  |
 
 <br><br>
