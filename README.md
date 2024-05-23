@@ -10,21 +10,19 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 ## Datasets
 * IWSLT-2017-01: https://wit3.fbk.eu/2017-01
 * IWSLT-2017-01-B: https://wit3.fbk.eu/2017-01-b
+* iwslt2017: https://huggingface.co/datasets/IWSLT/iwslt2017
 <br><br>
 
 ## Directory Structure
 ```
 /
 ├── config/
-│   └── demo.json
 ├── data/
 │   ├── iwslt17.de.en/
 │   │   ├── tokenizer/
 │   │   ├── txt/
 │   │   ├── huggingface_txt/
-│   │   ├── test-de-en.json
-│   │   ├── train-de-en.json
-│   │   └── validation-de-en.json
+│   │   ├── json/
 │   └── iwslt17.de.en.orig/
 │       └── xml/
 ├── model/

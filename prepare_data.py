@@ -17,7 +17,7 @@ from datasets import load_dataset
 from transformers import PreTrainedTokenizer
 
 def load_data(data_dir):
-    json_paths = glob.glob(data_dir + "/*.json")
+    json_paths = glob.glob(data_dir + "json/*.json")
     for json_path in json_paths:
         if 'train' in json_path: train_data = {"data": json_path.split("/")[-1]}
         elif 'validation' in json_path: valid_data = {"data": json_path.split("/")[-1]}
