@@ -20,33 +20,13 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 ├── data/
 │   ├── iwslt17.de.en/
 │   │   ├── tokenizer/
-│   │   │   ├── transformer-sp-bpe-iwslt-de.model
-│   │   │   ├── transformer-sp-bpe-iwslt-de.vocab
-│   │   │   ├── transformer-sp-bpe-iwslt-en.model
-│   │   │   └── transformer-sp-bpe-iwslt-en.vocab
 │   │   ├── txt/
-│   │   │   ├── test-de.txt
-│   │   │   ├── test-en.txt
-│   │   │   ├── train-de.txt
-│   │   │   ├── train-en.txt
-│   │   │   ├── valid-de.txt
-│   │   │   └── valid-en.txt
+│   │   ├── huggingface_txt/
 │   │   ├── test-de-en.json
 │   │   ├── train-de-en.json
 │   │   └── validation-de-en.json
 │   └── iwslt17.de.en.orig/
 │       └── xml/
-│           ├── dev/
-│           │   ├── IWSLT17.TED.dev2010.de-en.de.xml
-│           │   └── IWSLT17.TED.dev2010.de-en.en.xml
-│           ├── test/
-│           │   ├── IWSLT17.TED.tst2017.mltlng.de-en.de.xml
-│           │   └── IWSLT17.TED.tst2017.mltlng.en-de.en.xml
-│           └── train/
-│               ├── train.tags.de-en.de.txt
-│               ├── train.tags.de-en.de.xml
-│               ├── train.tags.de-en.en.txt
-│               └── train.tags.de-en.en.xml
 ├── model/
 │   ├── __init__.py
 │   ├── embedding.py
@@ -72,21 +52,22 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 
 ## Experiment result
 
-|  Model      | PPL | BLUE |
-| :-----: |:----: |:----: |
-| Transformer-Small  |  |  |  
-| Transformer-Big |  |  | 
-| T5-Small  | 3.09 | 19.21 | 
-| T5-Big | 5.10 | 14.66 | 
+|  Model      | BLUE |
+| :-----: |:----: |
+| Transformer-Small  |  |  
+| Transformer-Big |  | 
+| T5-Small  | 19.21 | 
+| T5-Big | 14.66 | 
 
 <br>
 
 |      Transformer-Small   | PPL | BLUE |
 | :-----: |:----: | :----: | 
-| Noam Optimizer + Label Smoothing |   |   | 
-| Noam Optimizer |  |   |
-| Adam Optimizer + Label Smoothing |   |   |
-| Adam Optimizer |  |   |
+| Noam Optimizer + Label Smoothing | 60.11 | 16.87  | 
+| Noam Optimizer | 22.97 | 16.99  |
+| Adam Optimizer + Label Smoothing | 55.49  | 17.74  |
+| Adam Optimizer | 21.75 | 17.69 |
+| Adam Optimizer (Huggingface iwslt2017) |  |  |
 
 <br>
 

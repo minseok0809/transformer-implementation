@@ -267,12 +267,13 @@ def main(args):
                     df_labels.append(label)
                     df_predictions.append(prediction)   
                     df_nested_labels.append([label])  
+                    sentence_bleu_score = round(sentence_bleu_score * 100, 4)
                     sentence_bleu_scores.append(sentence_bleu_score)
         pbar.close()
 
     test_loss /= test_total
     test_perplexity = np.exp(test_loss)
-    test_perplexity = round(test_loss, 4)       
+    test_perplexity = round(test_perplexity, 4)       
 
     result = metric.compute(predictions=df_predictions,
                                             references=df_nested_labels)
