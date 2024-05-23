@@ -56,21 +56,13 @@ class TransformerOutput(nn.Module):
         super(TransformerOutput, self).__init__()
 
         self.linear = nn.Linear(embedding_dim, vocab_size)
-        self.softmax = nn.LogSoftmax(dim=-1)
+        # self.softmax = nn.LogSoftmax(dim=-1)
    
     def forward(self, x):
         x = self.linear(x)
-        x = self.softmax(x)
+        # x = self.softmax(x)
 
         return x  
-    
-    def prob(self,decoded_output):
-        x = self.linear(decoded_output)
-        output_probabilities = self.softmax(x)
-        # LOGGER.info("output probabilities size={}".format(output_probabilities.size()))
-        
-        return output_probabilities
-
 
 class TransformerForTranslation(nn.Module):
     def __init__(self, max_seq_length, vocab_size,

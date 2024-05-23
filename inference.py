@@ -50,6 +50,7 @@ parser.add_argument('--unk_id', default=None, type=int)
 parser.add_argument('--bos_id', default=None, type=int)
 parser.add_argument('--eos_id', default=None, type=int)
 parser.add_argument('--evaluation_metric', default=None, type=str)
+parser.add_argument('--loss_type', default=None, type=str)
 parser.add_argument('--seed', default=None, type=int) 
 parser.add_argument('--epoch', default=None, type=int)
 parser.add_argument('--logging_step', default=None, type=int)
@@ -133,15 +134,21 @@ def main(args):
                                       feed_forward_size=args.feed_forward_size,
                                       num_attention_heads=args.num_attention_heads,
                                       attention_dropout_prob=args.attention_dropout_prob).to(device)
+    
+    if args.loss_type == 'label_smoothing':
+        criterion = nn.CrossEntropyLoss(ignore_index=args.pad_id, label_smoothing=args.label_smoothing)
 
-    if test_dataset == 'T':
+    elif args.loss_type != 'label_smoothing':
+        criterion = nn.NLLLoss(ignore_index=args.pad_id)
+
+    if args.test_dataset == 'T':
         with open(args.data_dir + "/" + args.txt_dir + "test-" + args.src_lang + ".txt", 'r', encoding='utf-8') as f:
             src_lines = f.readlines()
 
         with open(args.data_dir + "/" + args.txt_dir + "test-" + args.tgt_lang + ".txt", 'r', encoding='utf-8') as f:
             tgt_lines = f.readlines()
 
-    elif test_dataset == 'F':
+    elif args.test_dataset == 'F':
         with open(args.inference_dataset + "_" + args.src_lang + ".txt", 'r', encoding='utf-8') as f:
             src_lines = f.readlines()
 
@@ -152,7 +159,8 @@ def main(args):
                                     tgt_tokenizer=tgt_tokenizer,
                                     inputs=src_lines,
                                     outputs=tgt_lines,
-                                    max_seq_length=args.max_seq_length)
+                                    max_seq_length=args.max_seq_length,
+                                    bos_id=args.bos_id)
     
     test_dataloader = DataLoader(dataset=test_dataset,
                                 batch_size=args.batch_size,
@@ -169,17 +177,26 @@ def main(args):
         df_predictions = []
         df_labels = []
         df_nested_labels = []
+
+        test_loss = 0
+        test_total = 0
+
         with tqdm.tqdm(test_dataloader) as pbar:
             for i, batch in enumerate(pbar):
-                
+
                 src_text, outputs, tgt_text = batch
+                
+                target = tgt_text
+                bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 
+                tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) 
+                tgt_text = tgt_text[:,:-1]            
 
                 if i == len(pbar) - 1:
                     print("\nPrediction:\n")
 
                 for seq in range(args.max_seq_length):
-                    prediction = model(src_text.to(device), outputs.to(device))
-                    prediction = torch.argmax(prediction.to(device), dim=-1)[:,-1] # get final token
+                    output = model(src_text.to(device), outputs.to(device))
+                    prediction = torch.argmax(output.to(device), dim=-1)[:,-1] 
                     outputs = torch.cat((outputs.to(device), prediction.to(device).view(-1,1)), dim=-1)
                     if i == len(pbar) - 1:
                         print(tgt_tokenizer.decode(outputs[0].tolist()))
@@ -190,7 +207,21 @@ def main(args):
                     print("Prediction Text:", outputs[0].tolist())
                     print("Label Text:", src_text[0].tolist())
                     print()
+
+                perplexity_output = model(src_text.to(device), tgt_text.to(device))
+
+                if args.loss_type == 'label_smoothing':
+                    pass
+
+                elif args.loss_type != 'label_smoothing':
+                    softmax = nn.LogSoftmax(dim=-1)
+                    perplexity_output = softmax(perplexity_output)
                     
+                loss = criterion(perplexity_output.view(-1, len(tgt_tokenizer)), target.view(-1))
+
+                test_loss += loss.item()
+                test_total += 1     
+
                 outputs = outputs.tolist()
                 labels = tgt_text.tolist()
 
@@ -200,18 +231,22 @@ def main(args):
 
                     try:
                         eos_idx = one_output.index(args.eos_id)
-                        one_output = one_output[1:eos_idx]
+                        if eos_idx > 1:
+                            one_output = one_output[1:eos_idx]
+                        elif eos_idx == 1:
+                            one_output = one_output[:eos_idx]
+                            one_output[0] = 42
                     except:
                         pass
-                            # print("len(i)=",len(i))
-                            # print("no eos token found")
                     try:
                         eos_idx = one_label.index(args.eos_id)
-                        one_label = one_label[1:eos_idx]
+                        if eos_idx > 1:
+                            one_label = one_label[1:eos_idx]
+                        elif eos_idx == 1:
+                            one_label = one_label[:eos_idx]
                     except:
                         pass
-                            # print("len(i)=",len(i))
-                            # print("no eos token found")
+
                     clean_output.append(one_output)
                     clean_label.append(one_label)
 
@@ -219,6 +254,7 @@ def main(args):
                 decoded_labels = tgt_tokenizer.decode(clean_label)
 
                 for prediction, label in zip(decoded_predictions, decoded_labels):  
+
 
                     result = metric.compute(predictions=[prediction],
                                                             references=[[label]])
@@ -232,7 +268,12 @@ def main(args):
                     df_predictions.append(prediction)   
                     df_nested_labels.append([label])  
                     sentence_bleu_scores.append(sentence_bleu_score)
- 
+        pbar.close()
+
+    test_loss /= test_total
+    test_perplexity = np.exp(test_loss)
+    test_perplexity = round(test_loss, 4)       
+
     result = metric.compute(predictions=df_predictions,
                                             references=df_nested_labels)
     if args.evaluation_metric == 'bleu':
@@ -246,11 +287,15 @@ def main(args):
     prediction_df.to_csv("{}{}.csv".format('./inference/',
                                                 args.model_name),
                                                 index=False)
+    
+    if args.evaluation_metric == 'bleu':
+        corpus_bleu_score = corpus_bleu_score * 100
+    elif args.evaluation_metric == 'sacrebleu':
+        pass
 
-    corpus_bleu_score = corpus_bleu_score * 1000
-    print("Test BLEU Score:{}".format(round(corpus_bleu_score, 4))); print("\n")
+    corpus_bleu_score = round(corpus_bleu_score, 4)
+    print("Test BLEU Score:{}  Perplexity:{}".format(corpus_bleu_score, test_perplexity)); print("\n")
 
-                       
 if __name__ == "__main__":
 
     args = parser.parse_args()

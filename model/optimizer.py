@@ -27,3 +27,5 @@ class NoamOpt(object):
             p["lr"] = rate
         self._rate = rate
         self.optimizer.step()
+
+# https://nlp.seas.harvard.edu/2018/04/03/attention.html

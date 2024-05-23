@@ -206,7 +206,6 @@ def main(args):
     if args.mode == "run":
 
         best_loss = float("inf")
-        cnt = 0
         train_global_step = 0
         valid_global_step = 0
 
@@ -215,6 +214,7 @@ def main(args):
         valid_loss_list = []
         corpus_epoch_list = []
         corpus_bleu_score_list = []
+        test_perplexity_list = []
 
         for epoch in range(args.epoch):
             train_loss = 0
@@ -231,13 +231,19 @@ def main(args):
                         src_text, tgt_text = batch
 
                         target = tgt_text
-
-                        bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 # 2 means sos token
-                        tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) # insert bos token in front
+                        bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 
+                        tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) 
                         tgt_text = tgt_text[:,:-1]
 
                         output = model(src_text, tgt_text)
-  
+
+                        if args.loss_type == 'label_smoothing':
+                            pass
+
+                        elif args.loss_type != 'label_smoothing':
+                            softmax = nn.LogSoftmax(dim=-1)
+                            output = softmax(output)
+
                         loss = criterion(output.view(-1, len(tgt_tokenizer)), target.view(-1))
 
                         if args.optimizer_type == 'noam':
@@ -252,18 +258,26 @@ def main(args):
                         train_total += 1
 
                         if (train_global_step + 1) % args.logging_step == 0:
-                            summary.add_scalar('loss/loss_train', loss.item(), train_global_step) # tensorboard 
+                            summary.add_scalar('loss/loss_train', loss.item(), train_global_step) 
                             prediction = torch.argmax(output, dim=-1).tolist()[0]
-                            label = target.tolist()[0]
+                            label = tgt_text.tolist()[0]
                             try:
                                 label_eos_index = label.index(args.eos_id)
-                                label = label[1:label_eos_index]
+                                if label_eos_index > 1:
+                                    label = label[1:label_eos_index]
+                                elif label_eos_index == 1:
+                                    label = label[:label_eos_index]
+
                                 prediction_eos_index = prediction.index(args.eos_id)
-                                prediction = prediction[1:prediction_eos_index]
+                                if prediction_eos_index > 1:
+                                    prediction = prediction[1:prediction_eos_index]
+                                elif prediction_eos_index == 1:
+                                    prediction = prediction[:prediction_eos_index]
+                                    prediction[0] = 42
                             except:
                                 label = label[1:]
                                 prediction = prediction[1:]
-    
+
                             label_list = tgt_tokenizer.decode(label)
                             prediction_list = tgt_tokenizer.decode(prediction)
 
@@ -276,14 +290,14 @@ def main(args):
                             result = metric.compute(predictions=[prediction], references=[[label]])
                             bleu_score = result['bleu']
                             bleu_score =  round(bleu_score * 100, 4)
-                            print("Blue Score:", bleu_score)                    
+                            print("BLEU Score: ", bleu_score)                    
 
                         train_global_step += 1
                 pbar.close()
 
                 train_loss /= train_total
                 prediction = torch.argmax(output, dim=-1).tolist()[0]
-                label = target.tolist()[0]
+                label = tgt_text.tolist()[0]
                 try:
                     eos_index = label.index(args.eos_id)
                     label = label[1:eos_index]
@@ -301,13 +315,14 @@ def main(args):
 
                 prediction = ' '.join(prediction_list)
                 label = ' '.join(label_list)
+
                 result = metric.compute(predictions=[prediction], references=[[label]])
                 if args.evaluation_metric == 'bleu':
                     sentence_bleu_score = result['bleu']
                 elif args.evaluation_metric == 'sacrebleu':
                     sentence_bleu_score = result['score']  
                 sentence_bleu_score = round(sentence_bleu_score * 100, 4)
-                print("Sentence Blue Score:", sentence_bleu_score, 4)             
+                print("Sentence BLEU Score: ", sentence_bleu_score, 4)             
             
                 if args.do_eval == "T":
                     model.eval()
@@ -319,27 +334,43 @@ def main(args):
                                 src_text, tgt_text = batch
 
                                 target = tgt_text
-                                bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 # 2 means sos token
-                                tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) # insert bos token in front
+                                bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 
+                                tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) 
                                 tgt_text = tgt_text[:,:-1]
 
                                 output = model(src_text, tgt_text)
-                                
+
+                                if args.loss_type == 'label_smoothing':
+                                    pass
+
+                                elif args.loss_type != 'label_smoothing':
+                                    softmax = nn.LogSoftmax(dim=-1)
+                                    output = softmax(output)
+                                    
                                 loss = criterion(output.view(-1, len(tgt_tokenizer)), target.view(-1))
 
                                 valid_loss += loss.item()
                                 valid_total += 1
- 
-                                
+                                valid_global_step += 1
+
                             valid_loss /= valid_total
 
                             prediction = torch.argmax(output, dim=-1).tolist()[0]
-                            label = target.tolist()[0]
+                            label = tgt_text.tolist()[0]
                             try:
-                                label_eos_idx = label.index(args.eos_id)
-                                label = label[1:label_eos_idx]
-                                prediction_eos_idx = prediction.index(args.eos_id)
-                                prediction = prediction[1:prediction_eos_idx]
+                                label_eos_index = label.index(args.eos_id)
+                                if label_eos_index > 1:
+                                    label = label[1:label_eos_index]
+                                elif label_eos_index == 1:
+                                    label = label[:label_eos_index]
+
+                                prediction_eos_index = prediction.index(args.eos_id)
+                                if prediction_eos_index > 1:
+                                    prediction = prediction[1:prediction_eos_index]
+                                elif prediction_eos_index == 1:
+                                    prediction = prediction[:prediction_eos_index]
+                                    prediction[0] = 42
+                                    
                             except:
                                 label = label[1:]
                                 prediction = prediction[1:]
@@ -359,7 +390,7 @@ def main(args):
                             elif args.evaluation_metric == 'sacrebleu':
                                 sentence_bleu_score = result['score']  
                             sentence_bleu_score = round(sentence_bleu_score * 100, 4)
-                            print("Sentence Blue Score:", sentence_bleu_score) 
+                            print("Sentence BLEU Score: ", sentence_bleu_score) 
 
                         pbar.close()             
                     
@@ -387,6 +418,9 @@ def main(args):
 
                         if args.do_predict == "T":
 
+                            test_loss = 0
+                            test_total = 0
+
                             model.eval()
 
                             with torch.no_grad():
@@ -397,42 +431,63 @@ def main(args):
                                 with tqdm.tqdm(test_dataloader) as pbar:
                                     pbar.set_description("Epoch " + str(epoch + 1))
                                     for i, batch in enumerate(pbar):
-                                        
                                         src_text, outputs, tgt_text = batch
 
+                                        target = tgt_text
+                                        bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 
+                                        tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) 
+                                        tgt_text = tgt_text[:,:-1]
+                            
                                         for seq in range(args.max_seq_length):
-                                            prediction = model(src_text.to(device), outputs.to(device))
-                                            prediction = torch.argmax(prediction.to(device), dim=-1)[:,-1] # get final token
+                                            output = model(src_text.to(device), outputs.to(device))
+                                            prediction = torch.argmax(output.to(device), dim=-1)[:,-1] 
                                             outputs = torch.cat((outputs.to(device), prediction.to(device).view(-1,1)), dim=-1)
+
+                                        perplexity_output = model(src_text.to(device), tgt_text.to(device))
+
+                                        if args.loss_type == 'label_smoothing':
+                                            pass
+
+                                        elif args.loss_type != 'label_smoothing':
+                                            softmax = nn.LogSoftmax(dim=-1)
+                                            perplexity_output = softmax(perplexity_output)
                                             
+                                        loss = criterion(perplexity_output.view(-1, len(tgt_tokenizer)), target.view(-1))
+
+                                        test_loss += loss.item()
+                                        test_total += 1
+
                                         outputs = outputs.tolist()
                                         labels = tgt_text.tolist()
 
                                         clean_output = []
                                         clean_label = []
                                         for one_output, one_label in zip(outputs, labels):
-            
                                             try:
                                                 eos_idx = one_output.index(args.eos_id)
-                                                one_output = one_output[1:eos_idx]
+                                                if eos_idx > 1:
+                                                    one_output = one_output[1:eos_idx]
+                                                elif eos_idx == 1:
+                                                    one_output = one_output[:eos_idx]
+                                                    one_output[0] = 42
                                             except:
-                                                one_output = one_output[1:]
-                                                    # print("len(i)=",len(i))
-                                                    # print("no eos token found")
+                                                pass
+
                                             try:
                                                 eos_idx = one_label.index(args.eos_id)
-                                                one_label = one_label[1:eos_idx]
+                                                if eos_idx > 1:
+                                                    one_label = one_label[1:eos_idx]
+                                                elif eos_idx == 1:
+                                                    one_label = one_label[:eos_idx]
                                             except:
-                                                one_label = one_label[1:]
-                                                    # print("len(i)=",len(i))
-                                                    # print("no eos token found")
+                                                pass
+
                                             clean_output.append(one_output)
                                             clean_label.append(one_label)
                     
                                         decoded_predictions = tgt_tokenizer.decode(clean_output)
                                         decoded_labels = tgt_tokenizer.decode(clean_label)
-                    
-                                        
+
                                         for prediction, label in zip(decoded_predictions, decoded_labels):
 
                                             result = metric.compute(predictions=[prediction],
@@ -447,23 +502,12 @@ def main(args):
                                             df_predictions.append(prediction)     
                                             df_nested_labels.append([label])    
                                             sentence_bleu_score = round(sentence_bleu_score * 100, 4)
-                                            sentence_bleu_scores.append(sentence_bleu_score)
-                                            
-                                        valid_loss /= valid_total
-
-                                        prediction = torch.argmax(output, dim=-1).tolist()[0]
-                                        label = target.tolist()[0]
-                                        try:
-                                            label_eos_idx = label.index(args.eos_id)
-                                            label = label[1:label_eos_idx]
-                                            prediction_eos_idx = prediction.index(args.eos_id)
-                                            prediction = prediction[1:prediction_eos_idx]
-                                        except:
-                                            label = label[1:]
-                                            prediction = prediction[1:]
-                    
-                                        label_list = tgt_tokenizer.decode(label)
-                                        prediction_list = tgt_tokenizer.decode(prediction)                           
+                                            sentence_bleu_scores.append(sentence_bleu_score)                         
+                                pbar.close()
+                            
+                            test_loss /= test_total
+                            test_perplexity = np.exp(test_loss)
+                            test_perplexity = round(test_perplexity, 4)
 
                             result = metric.compute(predictions=df_predictions,
                                                                     references=df_nested_labels)
@@ -485,14 +529,16 @@ def main(args):
                                                                         "_" + epoch_num),
                                                                         index=False)
                             corpus_bleu_score = round(corpus_bleu_score * 100, 4)
-                            print("Test BLEU Score:{}".format(corpus_bleu_score)); print("\n")
+                            print("Test BLEU Score: {}  Perplexity: {}".format(corpus_bleu_score, test_perplexity)); print("\n")
 
                             corpus_epoch_list.append(epoch + 1)
                             corpus_bleu_score_list.append(corpus_bleu_score)
+                            test_perplexity_list.append(test_perplexity)
 
-                            bleu_score_df = pd.DataFrame({'Epoch':corpus_epoch_list,
-                                                        'BLEU Score':corpus_bleu_score_list})
-                            bleu_score_df.to_csv("{}{}.csv".format(args.output_dir, args.model_name + "_bleu_score"), 
+                            evaluation_metric_df = pd.DataFrame({'Epoch':corpus_epoch_list,
+                                                        'BLEU':corpus_bleu_score_list,
+                                                        'Perplexity':test_perplexity_list})
+                            evaluation_metric_df.to_csv("{}{}.csv".format(args.output_dir, args.model_name + "_evaluation_metric"), 
                                                 index=False)  
                             
                             
@@ -503,8 +549,8 @@ def main(args):
 
                 target = tgt_text
 
-                bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 # 2 means sos token
-                tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) # insert bos token in front
+                bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 
+                tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1)
                 tgt_text = tgt_text[:,:-1]
                 if i == 0:
                     macs, params = profile(model, inputs=(src_text, tgt_text))
@@ -528,8 +574,8 @@ def main(args):
 
                 target = tgt_text
 
-                bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2 # 2 means sos token
-                tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1) # insert bos token in front
+                bos_tokens = torch.ones(tgt_text.size()[0],1).long().to(device)*2
+                tgt_text = torch.cat((bos_tokens, tgt_text), dim=-1)
                 tgt_text = tgt_text[:,:-1]
                 if i == 0:
                     output = model(src_text, tgt_text)

@@ -85,17 +85,8 @@ class SentencePieceTokenizer(object):
         self.bos_id = bos_id
         self.eos_id = eos_id
 
-        self.l = 0
-        self.alpha = 0
-        self.n = 0    
-            
     def transform(self, sentence, max_seq_length):
-        if self.l and self.alpha:
-            x = self.sp.SampleEncodeAsIds(sentence, self.l, self.alpha)
-        elif self.n:
-            x = self.sp.NBestEncodeAsIds(sentence, self.n)
-        else:
-            x = self.sp.EncodeAsIds(sentence)
+        x = self.sp.EncodeAsIds(sentence)
         if max_seq_length > 0:
             pad = [0] * max_seq_length
             pad[:min(len(x), max_seq_length)] = x[:min(len(x), max_seq_length)]
@@ -111,7 +102,7 @@ class SentencePieceTokenizer(object):
         file = self.spm_path + load_path
         self.sp = spm.SentencePieceProcessor()
         self.sp.Load(file)
-        self.sp.SetEncodeExtraOptions('bos:eos')
+        self.sp.SetEncodeExtraOptions('eos')
         return self
 
     def decode(self,encoded_sentences):

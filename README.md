@@ -50,10 +50,10 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 ├── model/
 │   ├── __init__.py
 │   ├── embedding.py
-│   ├── loss.py
 │   ├── optimizer.py
 │   ├── sublayer.py
 │   └── transformer.py
+├── t5_baseline/
 ├── debug/
 ├── output/
 ├── inference/
@@ -63,7 +63,8 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 ├── train.py
 ├── inference.py
 ├── data_preprocessing.ipynb
-└── transformer_pipeline.ipynb
+├── transformer_pipeline.ipynb
+└── transformer_inference.ipynb
 ```
 
 <br><br>
@@ -71,20 +72,29 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 
 ## Experiment result
 
-|         | BLUE |
-| :-----: |:----: | 
-| Transformer-Small  |  | 
-| Transformer-Big |  |
-| T5-Small  | 19.21 | 
-| T5-Big | 14.66 |
+|  Model      | PPL | BLUE |
+| :-----: |:----: |:----: |
+| Transformer-Small  |  |  |  
+| Transformer-Big |  |  | 
+| T5-Small  | 3.09 | 19.21 | 
+| T5-Big | 5.10 | 14.66 | 
 
-<br><br>
+<br>
 
-|      Transformer-Small   | BLUE |
-| :-----: |:----: | 
-| Noam Optimizer + Label Smoothing |  | 
-| Noam Optimizer |  |
-| Adam Optimizer + Label Smoothing |  | 
-| Adam Optimizer |  |
+|      Transformer-Small   | PPL | BLUE |
+| :-----: |:----: | :----: | 
+| Noam Optimizer + Label Smoothing |   |   | 
+| Noam Optimizer |  |   |
+| Adam Optimizer + Label Smoothing |   |   |
+| Adam Optimizer |  |   |
+
+<br>
+
+|      Transformer-Big   | PPL | BLUE |
+| :-----: |:----: | :----: |  
+| Noam Optimizer + Label Smoothing |  |   |
+| Noam Optimizer |  |   |
+| Adam Optimizer + Label Smoothing |  |   |
+| Adam Optimizer |  |   |
 
 <br><br>
