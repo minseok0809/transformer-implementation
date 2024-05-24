@@ -54,10 +54,12 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 | :-----: |:----: |
 | Transformer-Small  |  |  
 | Transformer-Big |  | 
-| Transformer-Small (HuggingFace iwslt2017) |  |  
+| Transformer-Small (HuggingFace iwslt2017) | 26.35 |  
+| Transformer-Big (HuggingFace iwslt2017) | 26.35 |  
 | T5-Small  | 19.21 | 
 | T5-Big | 14.66 | 
-| T5-Small (HuggingFace iwslt2017) |  | 
+| T5-Small (HuggingFace iwslt2017) | | 
+| T5-Big (HuggingFace iwslt2017) | | 
 
 <br>
 
@@ -67,7 +69,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 | Noam Optimizer | 22.97 | 16.99  |
 | Adam Optimizer + Label Smoothing | 55.49  | 17.74  |
 | Adam Optimizer | 21.75 | 17.69 |
-| Adam Optimizer (HuggingFace iwslt2017) |  |  |
+| Adam Optimizer (HuggingFace iwslt2017) | 9.13 | 26.35 |
 
 <br>
 
@@ -77,5 +79,6 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 | Noam Optimizer |  |   |
 | Adam Optimizer + Label Smoothing |  |   |
 | Adam Optimizer |  |   |
+| Adam Optimizer (HuggingFace iwslt2017) |  |  |
 
 <br><br>
