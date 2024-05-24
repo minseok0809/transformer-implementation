@@ -7,7 +7,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 <br><br>
 
 
-## Dataset
+## Data
 * IWSLT-2017-01: https://wit3.fbk.eu/2017-01
 * IWSLT-2017-01-B: https://wit3.fbk.eu/2017-01-b
 * iwslt2017: https://huggingface.co/datasets/IWSLT/iwslt2017
