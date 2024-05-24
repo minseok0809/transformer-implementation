@@ -7,7 +7,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 <br><br>
 
 
-## Datasets
+## Dataset
 * IWSLT-2017-01: https://wit3.fbk.eu/2017-01
 * IWSLT-2017-01-B: https://wit3.fbk.eu/2017-01-b
 * iwslt2017: https://huggingface.co/datasets/IWSLT/iwslt2017
@@ -54,10 +54,10 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 | :-----: |:----: |
 | Transformer-Small  |  |  
 | Transformer-Big |  | 
-| Transformer-Small (Huggingface iwslt2017) |  |  
+| Transformer-Small (HuggingFace iwslt2017) |  |  
 | T5-Small  | 19.21 | 
 | T5-Big | 14.66 | 
-| T5-Small (Huggingface iwslt2017) |  | 
+| T5-Small (HuggingFace iwslt2017) |  | 
 
 <br>
 
@@ -67,7 +67,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 | Noam Optimizer | 22.97 | 16.99  |
 | Adam Optimizer + Label Smoothing | 55.49  | 17.74  |
 | Adam Optimizer | 21.75 | 17.69 |
-| Adam Optimizer (Huggingface iwslt2017) |  |  |
+| Adam Optimizer (HuggingFace iwslt2017) |  |  |
 
 <br>
 
