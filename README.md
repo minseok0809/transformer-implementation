@@ -54,8 +54,10 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 | :-----: |:----: |
 | Transformer-Small  |  |  
 | Transformer-Big |  | 
+| Transformer-Small (Huggingface iwslt2017) |  |  
 | T5-Small  | 19.21 | 
 | T5-Big | 14.66 | 
+| T5-Small (Huggingface iwslt2017) |  | 
 
 <br>
 
