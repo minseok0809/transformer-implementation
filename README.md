@@ -60,7 +60,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 <br>
 
 |  Model      | PPL | BLUE |
-| :-----: |:----: :----: |
+| :-----: |:----: |:----: |
 | Transformer-Small  | 21.75 | 17.69 | 
 | Transformer-Big | 16.36 |  22.55 |
 | T5-Small  | 8.20 | 19.21 |
@@ -89,6 +89,7 @@ This project is the unofficial implementation of NeurlIPS 2017 paper Attention i
 <br>Model: Transformer-Big
 
 |      Model   | PPL | BLUE |
+| :-----: |:----: | :----: | 
 | Adam Optimizer | 16.36 |  22.55 |
 | Adam Optimizer (HuggingFace iwslt2017) | 9.32 | 26.73 |
 
